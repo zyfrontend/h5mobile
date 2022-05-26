@@ -1,92 +1,399 @@
-# h5mobile
+# Vue3 vite vant 项目模板
 
-vue3 vite h5 移动端
+### 集成工具
 
-## Getting started
+- vite
+- axios(网络请求)
+- pinia(vuex替代)
+- vant(ui库)
+- vue-i18n(国际化)
+- vue-router(路由)
+- web3
+- eslint(语法检查)
+- prettier(格式化)
+- sass
+- postcss-pxtorem(移动端rem)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### axios封装
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+![image-20220521112632904](http://image.zyfullstack.top/image-20220521112632904.png)
 
-## Add your files
+1. 基于`vantui`增加`loading`动画
+2. 基于`vantui`增加`message`提示
+3. 请求拦截添加`x-token`
+4. 响应拦截处理错误码
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- 个性化配置
+
+```js
+// 自定义配置
+  let custom_options = Object.assign(
+    {
+      loading: false, // 是否开启loading层效果, 默认为false
+      message: false // 是否使用后端返回 message, 默认为false
+    },
+    customOptions
+  );
+```
+
+- 使用方式
+
+```js
+import http from './http';
+
+// 登录api
+export async function userLogin(data) {
+  try {
+    const res = await http(
+      {
+        url: '/api/common/login',
+        method: 'post',
+        data: data
+      },
+      {
+        // 自定义配置
+        loading: false
+      }
+    );
+    window.localStorage.setItem('token', res.data['x-token']);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// 获取配置信息 api
+export async function getInformation(data) {
+  try {
+    return await http({
+      url: '/api/common/config',
+      method: 'get',
+      data: data
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/zyfrontend/h5mobile.git
-git branch -M main
-git push -uf origin main
+
+### pinia状态管理
+
+![image-20220521112622228](http://image.zyfullstack.top/image-20220521112622228.png)
+
+- Public 模块
+
+```js
+// Public 模块
+import { defineStore } from 'pinia';
+// 唯一 id Public
+export const PublicStore = defineStore('Public', {
+  state: () => {
+    return {
+      userMsg: 1
+    };
+  },
+  getters: {
+    getUserMsg(state) {
+      return state.userMsg;
+    }
+  },
+  actions: {
+    setUserMsg() {
+      this.userMsg++;
+    }
+  }
+});
+
 ```
 
-## Integrate with your tools
+- 使用方式
 
-- [ ] [Set up project integrations](https://gitlab.com/zyfrontend/h5mobile/-/settings/integrations)
+```vue
+<template>
+<!--   调用   -->
+{{ publicStore.getUserMsg }}
+</template>
 
-## Collaborate with your team
+<script setup>
+// 导入相关模块
+import { storeToRefs } from 'pinia'
+import { PublicStore } from '~/store/Public';
+const publicStore = PublicStore();
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+// 事件中调用
+const changeLanguageClick = () => {
+  publicStore.setUserMsg();
+};
+  
+// 保持响应式使用storeToRefs
+const { getUserMsg, userMsg } = storeToRefs(PublicStore()) 
+</script>
+```
 
-## Test and Deploy
+#### vantui
 
-Use the built-in continuous integration in GitLab.
+![image-20220521114202809](http://image.zyfullstack.top/image-20220521114202809.png)
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```js
+// vant/web3.js
+// 引入需要的组件
+import { Button, Image as VanImage, ImagePreview } from 'vant';
 
-***
+// use
+export function vant(app) {
+  app.use(ImagePreview);
+  app.use(VanImage);
+  app.use(Button);
+}
+export default {
+  components: {
+    [ImagePreview.Component.name]: ImagePreview.Component
+  }
+};
 
-# Editing this README
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```js
+// main.js
+...
+import 'vant/lib/index.css';
+import { vant } from '~/vant';
+...
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+const app = createApp(App);
+...
+vant(app);
+...
+app.mount('#app');
+```
 
-## Name
-Choose a self-explaining name for your project.
+- 配置vite
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```js
+// vite.config.js
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+import styleImport, { VantResolve } from 'vite-plugin-style-import';
+plugins: [
+    styleImport({
+      resolves: [VantResolve()]
+    }),
+  ],
+```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+#### vue-i18n
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+> 推荐搭配`vscode`的`i18n-all`插件使用，实现自动翻译替换,安装插件会自动识别`language/web3.js`文件
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```js
+// src/language/web3.js
+import { createI18n } from 'vue-i18n';
+// 语言包
+import zh from './zh.json';
+import en from './en.json';
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+const messages = {
+  en: {
+    ...en
+  },
+  zh: {
+    ...zh
+  }
+};
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+const i18n = createI18n({
+  // vue3 Composition API 需要 legacy
+  legacy: false,
+  locale: localStorage.getItem('language') || 'zh',
+  fallbackLocale: 'en',
+  messages
+});
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+export default i18n;
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+```
 
-## License
-For open source projects, say how it is licensed.
+- 使用
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```vue
+<template>
+  <view class="index-container">
+    <h1>index-container</h1>
+    {{ t('ce-shi') }}
+    <div>
+      {{ t('text1') }}
+    </div>
+    <div>{{ t('text2') }}</div>
+  </view>
+</template>
+
+<script setup>
+import { useI18n } from 'vue-i18n';
+
+// i18n
+const { t, locale } = useI18n();
+
+// 切换语言事件
+const changeLanguageClick = () => {
+  locale.value === 'en' ? (locale.value = 'zh') : (locale.value = 'en');
+};
+</script>
+
+```
+
+#### vue-router(路由)
+
+```js
+// src/router/web3.js
+
+import { createRouter, createWebHashHistory } from 'vue-router';
+
+const routes = [
+  {
+    path: '/',
+    component: () => import('~/views/home/index.vue')
+  },
+  {
+    path: '/about',
+    component: () => import('~/views/about/index.vue')
+  }
+];
+
+const router = createRouter({
+  routes,
+  history: createWebHashHistory()
+});
+
+// 导出 main.js注册
+export default router;
+
+```
+
+#### rem移动端适配
+
+- postcss
+
+```js
+// postcss.config.js
+// 基于设计稿 750 的 vant ui 适配 75
+module.exports = {
+  plugins: {
+    'postcss-pxtorem': {
+      rootValue({ file }) {
+        return file.indexOf('vant') !== -1 ? 37.5 : 75;
+      },
+      propList: ['*']
+    }
+  }
+};
+
+
+// postcss.config.js
+// 基于设计稿 350 的 vant ui 适配 37.5
+module.exports = {
+  plugins: {
+    'postcss-pxtorem': {
+      rootValue: 37.5,
+      propList: ['*'],
+    },
+  },
+};
+```
+
+- vite.config.js
+
+```js
+// vite.config.js
+import postCssPxToRem from 'postcss-pxtorem';
+export default defineConfig({
+plugins: [],
+...
+css: {
+    postcss: {
+      plugins: [
+        postCssPxToRem({
+          // 750 设计稿 基准 rootValue 75
+          // 350 设计稿 基准 rootValue 37.5
+          rootValue: 75,
+          propList: ['*']
+        })
+      ]
+    }
+  },
+...
+})
+```
+
+#### 跨域配置
+
+```js
+// vite.config.js
+
+server: {
+  // 项目运行端口
+    port: 8888,
+    // 监听向 /api 发起的请求进行跨域处理
+    proxy: {
+      '/api': {
+        target: 'https://hash.tianyantu.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  },
+```
+
+#### 生产环境禁用打印输出
+
+```js
+// vite.config.js
+esbuild: {
+    pure: ['console.log'],
+    drop: ['debugger']
+  },
+```
+
+#### 路径别名
+
+```js
+// vite.config.js
+const path = require('path');
+
+resolve: {
+    alias: {
+      '~': path.resolve(__dirname, './src'),
+    }
+  },
+```
+
+#### web3
+
+> 默认vite+vue3，无法正常导入web3，以及全局window的使用
+
+```html
+<!--  index.html  -->
+<script>
+  window.global = window;
+</script>
+<script type="module">
+  import process from 'process';
+  import { Buffer } from 'buffer';
+  import EventEmitter from 'events';
+
+  window.Buffer = Buffer;
+  window.process = process;
+  window.EventEmitter = EventEmitter;
+</script>
+```
+
+```js
+// vite.config.js
+const path = require('path');
+resolve: {
+    alias: {
+      web3: path.resolve(__dirname, './node_modules/web3/dist/web3.min.js')
+    }
+  },
+```
+

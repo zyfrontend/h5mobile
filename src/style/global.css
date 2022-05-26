@@ -1,0 +1,9 @@
+:root {
+  /*--van-popup-background-color: rgba(0, 0, 0, 0) !important;*/
+  /*--van-overlay-background-color: rgba(0, 0, 0, 0) !important;*/
+}
+
+.popup-class {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(6px) !important;
+}
