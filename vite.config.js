@@ -27,7 +27,7 @@ export default defineConfig({
     port: 8888,
     proxy: {
       '/api': {
-        target: 'https://hash.tianyantu.com',
+        target: '1111',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
